@@ -5,27 +5,67 @@ import {
   TouchableWithoutFeedback,
   useColorScheme,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { DigitValue, OperatorValue } from "../types";
 import Operator from "./Operator";
+import { useSelector } from "react-redux";
+import { RootState } from "../store";
+import { useAppSelector, useAppDispatch } from "../store/hooks";
+import {
+  appendToCurrentValue,
+  setX,
+  setY,
+  excuteCalculation,
+  handleOperator,
+  counterReducer,
+  resetCurrentValue,
+} from "../store/reducer";
+import { useEffect } from "react";
 
 interface Props {
   value: DigitValue | OperatorValue | null;
 }
 
-const DigitButton: React.FC<Props> = ({ value }) => {
+const RoundButton: React.FC<Props> = ({ value }) => {
   const [isPressed, setIsPressed] = useState(false);
   const theme = useColorScheme();
   const darkMode = theme === "dark";
 
-  return value ? (
+  const dispatch = useAppDispatch();
+  const { operator } = useAppSelector((state: RootState) => state.counter);
+
+  function isInputValue(arg: DigitValue | OperatorValue): arg is DigitValue {
+    return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, "."].includes(arg);
+  }
+  function isOperator(arg: DigitValue | OperatorValue): arg is OperatorValue {
+    const operators: Array<number | string> = ["%", "/", "*", "-", "+", "-"];
+    return operators.includes(arg);
+  }
+
+  useEffect(() => {
+    value === operator ? setIsPressed(true): setIsPressed(false)
+  },[operator])
+
+  const handlePress = () => {
+    if (value !== null) {
+      setIsPressed(true)
+      if (isInputValue(value)) {
+        dispatch(appendToCurrentValue(value));
+      } else {
+        dispatch(handleOperator(value));
+      }
+    }
+  };
+
+  return value !== null ? (
     <TouchableWithoutFeedback
-      onPress={() => setIsPressed(true)}
-      onLongPress={() => setIsPressed(true)}
+      onPress={handlePress}
+      onLongPress={handlePress}
       onPressOut={() => {
-        setTimeout(() => {
-          setIsPressed(false);
-        }, 200);
+        if (!isOperator(value))
+          setTimeout(() => {
+            setIsPressed(false);
+          }, 200);
       }}
       key={value}
     >
@@ -38,7 +78,7 @@ const DigitButton: React.FC<Props> = ({ value }) => {
         >
           {/* value is 0 or able to be parsed to integer(type DigitValue)? => Text,
           otherwise => Operator */}
-          {parseInt(value) || value === "0" ? (
+          {isInputValue(value) ? (
             <Text style={styles({ darkMode, isPressed, value }).number}>
               {value}
             </Text>
@@ -58,7 +98,7 @@ const DigitButton: React.FC<Props> = ({ value }) => {
   );
 };
 
-export default DigitButton;
+export default RoundButton;
 
 const styles = ({
   darkMode,
@@ -67,7 +107,7 @@ const styles = ({
 }: {
   darkMode: boolean;
   isPressed: boolean;
-  value?: string;
+  value?: DigitValue | OperatorValue;
 }) =>
   StyleSheet.create({
     numberButton: {

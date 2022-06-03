@@ -17,6 +17,8 @@ import { useSelector } from 'react-redux'
 import { RootState } from '../store';
 import { useAppSelector } from '../store/hooks';
 
+import {Decimal} from 'decimal.js';
+
 const Calculator: React.FC = () => {
 
     const theme = useColorScheme();
@@ -33,12 +35,15 @@ const Calculator: React.FC = () => {
     [1, 2, 3, "+"],
     [null, 0, ".", "="],
   ];
-  
+
+  Decimal.set({ precision: 10, rounding: 4 })
+  const x = new Decimal(5)
+  console.log(x.div(3)) 
   return (
     <View style={styles.container}>
       <StatusBar barStyle={"light-content"} />
       <View style={styles.outputPanel}>
-        <Text style={themedStyles({ currentValues }).outputText}>{currentValue}</Text>
+        <Text testID='currentValue' style={themedStyles({ currentValues }).outputText}>{currentValue}</Text>
       </View>
       <View style={themedStyles({ theme }).inputPanel}>
         {rows.map((row, index) => (

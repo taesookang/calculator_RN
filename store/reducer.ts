@@ -1,6 +1,7 @@
 import { createSlice, current, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from ".";
 import { OperatorValue, DigitValue } from "../types";
+import Decimal from "decimal.js";
 
 interface ResultState {
   currentValues: Array<number | "." | "-">;
@@ -18,10 +19,7 @@ const initialState: ResultState = {
   result: null,
 };
 
-// refactoring needed
-// when press "." after x is set, it should append 0 to currentValue[0]
-// when press "=" after getting a result, it empties currentvalues array.
-// should maintain current value. done!
+
 export const counterReducer = createSlice({
   name: "counter",
   initialState,
@@ -32,9 +30,9 @@ export const counterReducer = createSlice({
       state.operator = null;
     },
     appendToCurrentValue: (state, action: PayloadAction<DigitValue>) => {
-        if(state.currentValues.length > 9) {
-            return
-        }
+      if (state.currentValues.length > 9) {
+        return;
+      }
       if (state.currentValues[0] === 0 && state.currentValues.length === 1) {
         state.currentValues.pop();
 
@@ -42,16 +40,17 @@ export const counterReducer = createSlice({
           counterReducer.caseReducers.resetCurrentValue(state);
         }
 
-        if(!state.x && state.operator) {
-            state.x = 0
+        if (!state.x && state.operator) {
+          state.x = 0;
         }
-
       } else if (state.y) {
         counterReducer.caseReducers.resetState(state);
         state.currentValues = [];
       } else {
         if (state.operator && !state.x) {
-          state.x = parseFloat(state.currentValues.join(""));
+          state.x = state.currentValues.includes(".")
+            ? parseFloat(state.currentValues.join(""))
+            : parseInt(state.currentValues.join(""));
           state.currentValues = [];
         }
       }
@@ -60,8 +59,8 @@ export const counterReducer = createSlice({
         state.result = null;
         state.currentValues = [];
       }
-      if ( !state.currentValues.length  && action.payload === "." ) {
-        state.currentValues.unshift(0)
+      if (!state.currentValues.length && action.payload === ".") {
+        state.currentValues.unshift(0);
       }
       state.currentValues.push(action.payload);
 
@@ -85,21 +84,17 @@ export const counterReducer = createSlice({
           break;
 
         case "=":
-          //   if (!state.x && !state.result && !state.operator) {
-          //     if (state.currentValues[0] === ".") {
-          //       state.currentValues.unshift(0);
-          //     }
-          //   }
           if (state.x || state.x === 0) {
             counterReducer.caseReducers.setY(state, {
-              payload: parseFloat(state.currentValues.join("")),
+              payload: state.currentValues.includes(".")
+                ? parseFloat(state.currentValues.join(""))
+                : parseInt(state.currentValues.join("")),
               type: "setY",
             });
             state.currentValues = [];
             counterReducer.caseReducers.excuteCalculation(state);
             counterReducer.caseReducers.resetState(state);
             break;
-           
           } else {
             break;
           }
@@ -110,11 +105,13 @@ export const counterReducer = createSlice({
             : state.currentValues.unshift("-");
           break;
         default:
-          if (state.operator === action.payload) {
-            state.operator = null;
-          } else {
-            state.operator = action.payload;
+          if (!state.x && state.operator) {
+            state.x = parseFloat(state.currentValues.join(""));
+            state.currentValues = [];
+            counterReducer.caseReducers.excuteCalculation(state);
           }
+          state.operator = action.payload;
+
       }
 
       console.log(state);
@@ -129,8 +126,10 @@ export const counterReducer = createSlice({
     },
 
     setResult: (state, action: PayloadAction<number>) => {
-      const result = action.payload;
-      state.result = result;
+        Decimal.set({ precision: 10, rounding: 4 })
+      const payload = action.payload;
+      const result = Number(new Decimal(payload))
+      state.result = result
       result
         .toString()
         .split("")
@@ -144,38 +143,41 @@ export const counterReducer = createSlice({
     },
 
     excuteCalculation: (state) => {
-      switch (state.operator) {
-        case "+":
-          counterReducer.caseReducers.setResult(state, {
-            payload: state.x! + state.y!,
-            type: "result",
-          });
-          break;
-        case "-":
-          counterReducer.caseReducers.setResult(state, {
-            payload: state.x! - state.y!,
-            type: "result",
-          });
-          break;
-        case "*":
-          counterReducer.caseReducers.setResult(state, {
-            payload: state.x! * state.y!,
-            type: "result",
-          });
-          break;
-        case "/":
-          counterReducer.caseReducers.setResult(state, {
-            payload: state.x! / state.y!,
-            type: "result",
-          });
-          break;
-        case "%":
-          counterReducer.caseReducers.setResult(state, {
-            payload: state.x! % state.y!,
-            type: "result",
-          });
+      if (state.x, state.y !== null) {
+          const x = new Decimal(state.x!);
+        switch (state.operator) {
+          case "+":
+            counterReducer.caseReducers.setResult(state, {
+              payload: Number(x.plus(state.y!)),
+              type: "result",
+            });
+            break;
+          case "-":
+            counterReducer.caseReducers.setResult(state, {
+              payload: Number(x.minus(state.y!)),
+              type: "result",
+            });
+            break;
+          case "*":
+            counterReducer.caseReducers.setResult(state, {
+              payload: Number(x.times(state.y!)),
+              type: "result",
+            });
+            break;
+          case "/":
+            counterReducer.caseReducers.setResult(state, {
+              payload: Number(x.div(state.y!)),
+              type: "result",
+            });
+            break;
+          case "%":
+            counterReducer.caseReducers.setResult(state, {
+              payload: Number(x.mod(state.y!)),
+              type: "result",
+            });
 
-        default:
+          default:
+        }
       }
     },
   },

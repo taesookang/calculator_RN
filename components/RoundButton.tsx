@@ -68,6 +68,7 @@ const RoundButton: React.FC<Props> = ({ value }) => {
           }, 200);
       }}
       key={value}
+      testID={value.toString()}
     >
       <View style={styles({ darkMode, isPressed }).topShadow}>
         <View

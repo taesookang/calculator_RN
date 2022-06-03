@@ -1,12 +1,13 @@
 import Calculator from "./components/Calculator";
 import { store } from "./store";
-import { Provider } from "react-redux";
+// import { Provider } from "react-redux";
+import { ReduxProvider } from './store'
 
 const App = () => {
   return (
-    <Provider store={store}>
+    <ReduxProvider reduxStore={store}>
       <Calculator />
-    </Provider>
+    </ReduxProvider>
   );
 };
 

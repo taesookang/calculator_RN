@@ -2,9 +2,10 @@ import { configureStore } from "@reduxjs/toolkit";
 import counterReducer from "./reducer";
 import { Provider } from "react-redux";
 import { ReactNode } from "react";
+import calculator from './reducer';
 
 export const store = configureStore({
-  reducer: { counter: counterReducer },
+  reducer: { calculator: calculator },
 });
 
 export type RootState = ReturnType<typeof store.getState>;

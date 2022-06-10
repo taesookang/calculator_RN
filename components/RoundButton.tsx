@@ -5,34 +5,24 @@ import {
   TouchableWithoutFeedback,
   useColorScheme,
 } from "react-native";
-import React, { useState, useCallback } from "react";
+import React, { useEffect } from "react";
 import { DigitValue, OperatorValue } from "../types";
 import Operator from "./Operator";
-import { useSelector } from "react-redux";
 import { RootState } from "../store";
 import { useAppSelector, useAppDispatch } from "../store/hooks";
-import {
-  appendToCurrentValue,
-  setX,
-  setY,
-  excuteCalculation,
-  handleOperator,
-  counterReducer,
-  resetCurrentValue,
-} from "../store/reducer";
-import { useEffect } from "react";
+import { appendToCurrentValue, handleOperator } from "../store/reducer";
 
 interface Props {
   value: DigitValue | OperatorValue | null;
 }
 
 const RoundButton: React.FC<Props> = ({ value }) => {
-  const [isPressed, setIsPressed] = useState(false);
+  const [isPressed, setIsPressed] = React.useState(false);
   const theme = useColorScheme();
   const darkMode = theme === "dark";
 
   const dispatch = useAppDispatch();
-  const { operator } = useAppSelector((state: RootState) => state.counter);
+  const { operator } = useAppSelector((state: RootState) => state.calculator);
 
   function isInputValue(arg: DigitValue | OperatorValue): arg is DigitValue {
     return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, "."].includes(arg);
@@ -43,12 +33,12 @@ const RoundButton: React.FC<Props> = ({ value }) => {
   }
 
   useEffect(() => {
-    value === operator ? setIsPressed(true): setIsPressed(false)
-  },[operator])
+    value === operator ? setIsPressed(true) : setIsPressed(false);
+  }, [operator]);
 
   const handlePress = () => {
     if (value !== null) {
-      setIsPressed(true)
+      setIsPressed(true);
       if (isInputValue(value)) {
         dispatch(appendToCurrentValue(value));
       } else {
@@ -84,7 +74,7 @@ const RoundButton: React.FC<Props> = ({ value }) => {
               {value}
             </Text>
           ) : (
-            <Operator isPressed={isPressed} value={value} />
+            <Operator isPressed={isPressed} value={value} theme={theme} />
           )}
         </View>
       </View>

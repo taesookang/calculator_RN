@@ -1,5 +1,4 @@
-
-import React, { useEffect } from 'react'
+import React, { useEffect } from "react";
 
 import { ColorSchemeName } from "react-native";
 import {
@@ -13,21 +12,21 @@ import {
 import RoundButton from "./RoundButton";
 import { DigitValue, OperatorValue } from "../types";
 
-import { useSelector } from 'react-redux'
-import { RootState } from '../store';
-import { useAppSelector } from '../store/hooks';
+import { RootState } from "../store";
+import { useAppSelector } from "../store/hooks";
 
-import {Decimal} from 'decimal.js';
+import { Decimal } from "decimal.js";
 
 const Calculator: React.FC = () => {
+  const theme = useColorScheme();
 
-    const theme = useColorScheme();
+  const { currentValues } = useAppSelector(
+    (state: RootState) => state.calculator
+  );
 
-    const { currentValues } = useAppSelector((state:RootState) => state.counter)
+  const currentValue = currentValues.join("");
 
-    const currentValue = currentValues.join("")
-  
-    // const { value } = useSelector((state:RootState) => state.counter)
+  // const { value } = useSelector((state:RootState) => state.counter)
   const rows: Array<Array<DigitValue | OperatorValue | null>> = [
     ["AC", "+/-", "%", "/"],
     [7, 8, 9, "*"],
@@ -36,14 +35,18 @@ const Calculator: React.FC = () => {
     [null, 0, ".", "="],
   ];
 
-  Decimal.set({ precision: 10, rounding: 4 })
-  const x = new Decimal(5)
-  console.log(x.div(3)) 
+  Decimal.set({ precision: 10, rounding: 4 });
+  const x = new Decimal(5);
   return (
     <View style={styles.container}>
       <StatusBar barStyle={"light-content"} />
       <View style={styles.outputPanel}>
-        <Text testID='currentValue' style={themedStyles({ currentValues }).outputText}>{currentValue}</Text>
+        <Text
+          testID="currentValue"
+          style={themedStyles({ currentValues }).outputText}
+        >
+          {currentValue}
+        </Text>
       </View>
       <View style={themedStyles({ theme }).inputPanel}>
         {rows.map((row, index) => (
@@ -58,47 +61,52 @@ const Calculator: React.FC = () => {
             key={index}
           >
             {row.map((value) => (
-              <RoundButton value={value} key={value}/>
+              <RoundButton value={value} key={value} />
             ))}
           </View>
         ))}
       </View>
     </View>
-  )
-}
+  );
+};
 
-export default Calculator
+export default Calculator;
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      justifyContent: "center",
-      backgroundColor: "#ECF0F1",
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "#ECF0F1",
+  },
+  outputPanel: {
+    flex: 1,
+    backgroundColor: "#141414",
+    paddingTop: 40,
+    paddingBottom: 16,
+    paddingHorizontal: 24,
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+  },
+});
+
+const themedStyles = ({
+  theme,
+  currentValues,
+}: {
+  theme?: ColorSchemeName;
+  currentValues?: Array<number | "." | "-">;
+}) =>
+  StyleSheet.create({
+    inputPanel: {
+      width: "100%",
+      flex: 2,
+      backgroundColor: theme === "dark" ? "#1A1A1A" : "#F0F0F0",
+      padding: 16,
+      paddingBottom: 48,
+      flexDirection: "column",
     },
-    outputPanel: {
-      flex: 1,
-      backgroundColor: "#141414",
-      paddingTop: 40,
-      paddingBottom: 16,
-      paddingHorizontal: 24,
-      justifyContent: "flex-end",
-      alignItems: "flex-end",
+    outputText: {
+      color: "#fff",
+      fontSize: currentValues && currentValues.length < 8 ? 80 : 56,
     },
-    
   });
-  
-  const themedStyles = ({ theme, currentValues }: { theme?: ColorSchemeName, currentValues?: Array<number | "." | "-"> }) =>
-    StyleSheet.create({
-      inputPanel: {
-        width: "100%",
-        flex: 2,
-        backgroundColor: theme === "dark" ? "#1A1A1A" : "#F0F0F0",
-        padding: 16,
-        paddingBottom: 48,
-        flexDirection: "column",
-      },
-      outputText: {
-        color: "#fff",
-        fontSize: currentValues && currentValues.length < 8 ? 80 : 56,
-      },
-    });

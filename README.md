@@ -1,6 +1,6 @@
 # Calculator React Native
 
-This is a simple calculator mobile app as my first React Native project which offers basic calculation functionalities as well as dark mode appearance. I implemented an array data structure to deal with displaying value of calculator, and its state was handled by Redux dispatch fucntion. 
+This is a simple calculator mobile app as my first React Native project which offers basic calculation functionalities as well as dark mode appearance. I implemented an array data structure to deal with displaying value of calculator, and its state was handled by Redux dispatch function. 
 
 ## Demo
 
